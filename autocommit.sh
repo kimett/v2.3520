@@ -72,13 +72,26 @@ grab_version(){
 # Note that that format is for changing things after the repository is in use, vs initially
 
 push_config(){
+  local msg="$1"
+  local tags="$2"
   cd $config_folder
   git pull origin $branch --no-rebase
   git add .
-  current_date=$(date +"%Y-%m-%d %T")
-  git commit -m "Autocommit from $current_date" -m "$m1" -m "$m2" -m "$m3" -m "$m4"
+  if [ -n "$msg" ]; then
+    commit_msg="$msg"
+  else
+    current_date=$(date +"%Y-%m-%d %T")
+    commit_msg="Autocommit from $current_date"
+  fi
+  git commit -m "$commit_msg" -m "$m1" -m "$m2" -m "$m3" -m "$m4"
   git push origin $branch
+  if [ -n "$tags" ]; then
+    for tag in $tags; do
+      git tag "$tag"
+    done
+    git push origin --tags
+  fi
 }
 
 grab_version
-push_config
+push_config "$1" "$2"
